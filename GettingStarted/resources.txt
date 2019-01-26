@@ -1,0 +1,5 @@
+Texas Instruments Code Composer Studio Download
+http://processors.wiki.ti.com/index.php/Download_CCS
+
+Getting Started Demo with CCSv6 and the MSP432 LaunchPad
+https://www.youtube.com/watch?v=SEELbfUnYmA
