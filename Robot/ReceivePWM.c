@@ -118,7 +118,8 @@ const Timer_A_CaptureModeConfig captureModeConfig =
 /*********************************************************************************
  ***************************** PWM Configurations ********************************
  *********************************************************************************/
-extern Timer_A_PWMConfig pwmConfig_LeftWheel0 =
+// Pin 7.7
+extern Timer_A_PWMConfig pwmConfig_LeftBack =
 {
  TIMER_A_CLOCKSOURCE_SMCLK,
  TIMER_A_CLOCKSOURCE_DIVIDER_1,
@@ -127,7 +128,8 @@ extern Timer_A_PWMConfig pwmConfig_LeftWheel0 =
  TIMER_A_OUTPUTMODE_RESET_SET,
  6000
 };
-extern Timer_A_PWMConfig pwmConfig_RightWheel0 =
+// Pin 7.6
+extern Timer_A_PWMConfig pwmConfig_RightBack =
 {
  TIMER_A_CLOCKSOURCE_SMCLK,
  TIMER_A_CLOCKSOURCE_DIVIDER_1,
@@ -136,7 +138,8 @@ extern Timer_A_PWMConfig pwmConfig_RightWheel0 =
  TIMER_A_OUTPUTMODE_RESET_SET,
  6000
 };
-extern Timer_A_PWMConfig pwmConfig_LeftWheel1 =
+// Pin 7.5
+extern Timer_A_PWMConfig pwmConfig_LeftFront =
 {
  TIMER_A_CLOCKSOURCE_SMCLK,
  TIMER_A_CLOCKSOURCE_DIVIDER_1,
@@ -145,7 +148,8 @@ extern Timer_A_PWMConfig pwmConfig_LeftWheel1 =
  TIMER_A_OUTPUTMODE_RESET_SET,
  12000
 };
-extern Timer_A_PWMConfig pwmConfig_RightWheel1 =
+// Pin 7.4
+extern Timer_A_PWMConfig pwmConfig_RightFront =
 {
  TIMER_A_CLOCKSOURCE_SMCLK,
  TIMER_A_CLOCKSOURCE_DIVIDER_1,
@@ -153,42 +157,6 @@ extern Timer_A_PWMConfig pwmConfig_RightWheel1 =
  TIMER_A_CAPTURECOMPARE_REGISTER_4,
  TIMER_A_OUTPUTMODE_RESET_SET,
  12000
-};
-extern Timer_A_PWMConfig pwmConfig_LeftWheel0_Stop =
-{
- TIMER_A_CLOCKSOURCE_SMCLK,
- TIMER_A_CLOCKSOURCE_DIVIDER_1,
- 24000,
- TIMER_A_CAPTURECOMPARE_REGISTER_1,
- TIMER_A_OUTPUTMODE_RESET_SET,
- 0
-};
-extern Timer_A_PWMConfig pwmConfig_RightWheel0_Stop =
-{
- TIMER_A_CLOCKSOURCE_SMCLK,
- TIMER_A_CLOCKSOURCE_DIVIDER_1,
- 24000,
- TIMER_A_CAPTURECOMPARE_REGISTER_2,
- TIMER_A_OUTPUTMODE_RESET_SET,
- 0
-};
-extern Timer_A_PWMConfig pwmConfig_LeftWheel1_Stop =
-{
- TIMER_A_CLOCKSOURCE_SMCLK,
- TIMER_A_CLOCKSOURCE_DIVIDER_1,
- 24000,
- TIMER_A_CAPTURECOMPARE_REGISTER_3,
- TIMER_A_OUTPUTMODE_RESET_SET,
- 0
-};
-extern Timer_A_PWMConfig pwmConfig_RightWheel1_Stop =
-{
- TIMER_A_CLOCKSOURCE_SMCLK,
- TIMER_A_CLOCKSOURCE_DIVIDER_1,
- 24000,
- TIMER_A_CAPTURECOMPARE_REGISTER_4,
- TIMER_A_OUTPUTMODE_RESET_SET,
- 0
 };
 extern Timer_A_PWMConfig pwmConfig_UltraSonic =
 {
@@ -199,60 +167,6 @@ extern Timer_A_PWMConfig pwmConfig_UltraSonic =
  TIMER_A_OUTPUTMODE_RESET_SET,
  30
 };
-
-/*********************************************************************************
- ************************** Motor Control Functions ******************************
- *********************************************************************************/
-void testForward()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1);
-}
-void testRight()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1_Stop);
-}
-void testStop()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1_Stop);
-}
-void moveForward()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel0);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel0);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1_Stop);
-}
-void moveBackward()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel0_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel0_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1);
-}
-void moveRight()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel0);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel0_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1_Stop);
-}
-void moveLeft()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel0_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel0);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1_Stop);
-}
-void moveStop()
-{
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel0_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel0_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_LeftWheel1_Stop);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_RightWheel1_Stop);
-}
 
 /*********************************************************************************
  ************************ Peripheral Initializations *****************************
@@ -299,42 +213,35 @@ int main(void)
     /* Enabling interrupts */
     MAP_UART_enableInterrupt(EUSCI_A2_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
     MAP_Interrupt_enableInterrupt(INT_EUSCIA2);
-    //MAP_Interrupt_enableSleepOnIsrExit();
-    //MAP_Interrupt_enableMaster();
-
-    MAP_GPIO_setAsOutputPin(GPIO_PORT_P6, GPIO_PIN1);
 
     // PWM for Motors
-    //GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN4,GPIO_PRIMARY_MODULE_FUNCTION);
-    //GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN5,GPIO_PRIMARY_MODULE_FUNCTION);
-    MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN6,GPIO_PRIMARY_MODULE_FUNCTION);
-    MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN7,GPIO_PRIMARY_MODULE_FUNCTION);
-    /* Configuring P2.4 as peripheral input for capture */
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P2, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
-    MAP_GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN5);
+    MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P7, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
+    MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P7, GPIO_PIN5, GPIO_PRIMARY_MODULE_FUNCTION);
+    MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P7, GPIO_PIN6, GPIO_PRIMARY_MODULE_FUNCTION);
+    MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P7, GPIO_PIN7, GPIO_PRIMARY_MODULE_FUNCTION);
+
     MAP_GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN5);
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
+
     /* Configuring Capture Mode */
-    MAP_Timer_A_initCapture(TIMER_A0_BASE, &captureModeConfig);
+    //MAP_Timer_A_initCapture(TIMER_A0_BASE, &captureModeConfig);
 
     /* Configuring Continuous Mode */
-    MAP_Timer_A_configureContinuousMode(TIMER_A0_BASE, &continuousModeConfig);
+    MAP_Timer_A_configureContinuousMode(TIMER_A1_BASE, &continuousModeConfig);
 
-    MAP_Interrupt_enableInterrupt(INT_TA0_N);
+    MAP_Interrupt_enableInterrupt(INT_TA1_N);
     initTimer32();
-    //initTimer32_Sound();
     MAP_Interrupt_enableMaster();
 
-
-    MAP_GPIO_setAsOutputPin(GPIO_PORT_P6, GPIO_PIN1);
-    MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P6, GPIO_PIN1);
-
     /* Starting the Timer_A0 in continuous mode */
-    MAP_Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_CONTINUOUS_MODE);
+    MAP_Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_CONTINUOUS_MODE);
     MAP_Timer32_startTimer(TIMER32_0_BASE, false);
     MAP_Timer32_startTimer(TIMER32_1_BASE, false);
 
-    //testForward();
+    Timer_A_PWMConfig* pointer_LeftBack = &pwmConfig_LeftBack;
+    Timer_A_PWMConfig* pointer_RightBack = &pwmConfig_RightBack;
+    Timer_A_PWMConfig* pointer_LeftFront = &pwmConfig_LeftFront;
+    Timer_A_PWMConfig* pointer_RightFront = &pwmConfig_RightFront;
 
     while (1)
     {
@@ -342,24 +249,59 @@ int main(void)
         analogY_data = (((analogY_upper & 0x0F) << 4) + (analogY_lower & 0x0F));
         analogX_data = (((analogX_upper & 0x0F) << 4) + (analogX_lower & 0x0F));
 
-        leftMotorEffort = (int16_t) analogY_data - (int16_t) analogX_data;
-        rightMotorEffort = (int16_t) analogY_data + (int16_t) analogX_data;
+        leftMotorEffort = (int16_t) analogY_data + (int16_t) analogX_data;
+        rightMotorEffort = (int16_t) analogY_data - (int16_t) analogX_data;
 
+        if ((abs(analogY_data) >= 20 || abs(analogX_data) >= 20) && ((buttons & 0x01) == 0x00))
+        {
+            if (leftMotorEffort > 5)
+            {
+                pointer_LeftFront->dutyCycle = 120*leftMotorEffort;
+                pointer_LeftBack->dutyCycle = 0;
+            }
+            else if (leftMotorEffort < -5)
+            {
+                pointer_LeftBack->dutyCycle = 120*abs(leftMotorEffort);
+                pointer_LeftFront->dutyCycle = 0;
+            }
+            else
+            {
+                pointer_LeftFront->dutyCycle = 0;
+                pointer_LeftBack->dutyCycle = 0;
+            }
 
-        if (leftMotorEffort >= 0) {
-            testForward();
-            volatile int count = 0;
-            while (count < 2501)
-                count++;
-            MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P6, GPIO_PIN1);
+            if (rightMotorEffort > 5)
+            {
+                pointer_RightFront->dutyCycle = 120*rightMotorEffort;
+                pointer_RightBack->dutyCycle = 0;
+            }
+            else if (rightMotorEffort < -5)
+            {
+                pointer_RightBack->dutyCycle = 120*abs(rightMotorEffort);
+                pointer_RightFront->dutyCycle = 0;
+            }
+            else
+            {
+                pointer_RightFront->dutyCycle = 0;
+                pointer_RightBack->dutyCycle = 0;
+            }
         }
-        else {
-            testStop();
-            volatile int count = 0;
-            while (count < 2501)
-                count++;
-            MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P6, GPIO_PIN1);
+        else
+        {
+            pointer_LeftBack->dutyCycle = 0;
+            pointer_LeftFront->dutyCycle = 0;
+            pointer_RightBack->dutyCycle = 0;
+            pointer_RightFront->dutyCycle = 0;
         }
+
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+        volatile int count = 0;
+        while (count < 2501)
+            count++;
+
     }
 }
 
@@ -369,7 +311,7 @@ void EUSCIA2_IRQHandler(void)
 {
 
     uint32_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A2_BASE);
-    uint8_t byte = UCA2RXBUF;// MAP_UART_receiveData(EUSCI_A2_BASE);
+    uint8_t byte = UCA2RXBUF;
 
     if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
     {
@@ -397,11 +339,8 @@ void EUSCIA2_IRQHandler(void)
         }
 
         else {
-            // analogX_packet1 = byte;
         }
     }
-
-    //MAP_UART_clearInterruptFlag(EUSCI_A2_BASE, status);
     EUSCI_A2->IFG &= 0xFFFE;
 
 }
