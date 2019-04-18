@@ -46,13 +46,15 @@ int main(void)
 
     // volatile int8_t reconstruct = 0;
 
-    //lcdString("Welcome to R2-D2");
+    lcdString("Welcome to R2-D2");
 
     char analogX[5];
     char analogY[5];
     char P7IN_String[5];
     char button1_string[1];
     char button2_string[1];
+    char scroll = 0;
+    char pos = 0;
 
     int8_t leftMotorEffort = 0;
     int8_t rightMotorEffort = 0;
@@ -102,7 +104,60 @@ int main(void)
         MAP_UART_transmitData(EUSCI_A2_BASE, switches_lower);
         MAP_UART_transmitData(EUSCI_A2_BASE, buttons);
 
-        lcd_command(0x02);
+        //lcd_command(0x02);
+
+        if (analogX_data <= 20 && analogX_data >= -20 && analogY_data >= 20 && ((buttons & 0x01) == 0x00)) {
+            lcd_command(0x02);
+            lcdString("Moving Forward  ");
+            scroll = 0;
+        }
+        else if (analogX_data <= 20 && analogX_data >= -20 && analogY_data <= -20 && ((buttons & 0x01) == 0x00)) {
+            lcd_command(0x02);
+            lcdString("Moving Backward ");
+            scroll = 0;
+        }
+        else if (analogX_data > 20 && analogY_data >= 20 && ((buttons & 0x01) == 0x00)) {
+            lcd_command(0x02);
+            lcdString("Forward Right   ");
+            scroll = 0;
+        }
+        else if (analogX_data < -20 && analogY_data >= 20 && ((buttons & 0x01) == 0x00)) {
+            lcd_command(0x02);
+            lcdString("Forward Left    ");
+            scroll = 0;
+        }
+        else if (analogX_data < -20 && analogY_data <= -20 && ((buttons & 0x01) == 0x00)) {
+            lcd_command(0x02);
+            lcdString("Backward Left   ");
+            scroll = 0;
+        }
+        else if (analogX_data > 20 && analogY_data <= -20 && ((buttons & 0x01) == 0x00)) {
+            lcd_command(0x02);
+            lcdString("Backward Right  ");
+            scroll = 0;
+        }
+        else {
+            if (scroll == 1 && pos <= 16) {
+                lcd_command(0x1C);
+                pos = pos + 1;
+                volatile int delay = 0;
+                while (delay < 500000)
+                    delay++;
+            }
+            else {
+                lcd_command(0x02);
+                lcdString("                 ");
+                lcd_command(0x02);
+                lcdString("R2-D2");
+                scroll = 1;
+                pos = 0;
+                volatile int delay = 0;
+                while (delay < 500000)
+                    delay++;
+            }
+        }
+
+        /*
         lcdString("B: ");
 
         if ((P10IN & 0x10) == 0x10 && (P10IN & 0x20) == 0x20)
@@ -127,6 +182,8 @@ int main(void)
         lcdString(" Y: ");
         lcdString(analogY);
         lcdString("        ");
+        */
+
 
     }
 
