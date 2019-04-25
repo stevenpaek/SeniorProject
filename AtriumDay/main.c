@@ -274,7 +274,7 @@ void randomMovement(uint16_t choice, int gogo0, int gogo1)
         }
     else if(choice%16 == 2) //right
             {
-                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftBack->dutyCycle = 12000;
                 pointer_LeftFront->dutyCycle = 0;
                 pointer_RightBack->dutyCycle = 0;
                 pointer_RightFront->dutyCycle = 12000;
@@ -296,7 +296,7 @@ void randomMovement(uint16_t choice, int gogo0, int gogo1)
             }
     else if(choice%16 == 4) //right
             {
-                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftBack->dutyCycle = 12000;
                 pointer_LeftFront->dutyCycle = 0;
                 pointer_RightBack->dutyCycle = 0;
                 pointer_RightFront->dutyCycle = 12000;
@@ -342,7 +342,7 @@ void randomMovement(uint16_t choice, int gogo0, int gogo1)
                 {
                     pointer_LeftBack->dutyCycle = 0;
                     pointer_LeftFront->dutyCycle = 12000;
-                    pointer_RightBack->dutyCycle = 0;
+                    pointer_RightBack->dutyCycle = 12000;
                     pointer_RightFront->dutyCycle = 0;
                     Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
                     Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
@@ -362,7 +362,7 @@ void randomMovement(uint16_t choice, int gogo0, int gogo1)
                 }
         else if(choice%16 == 10) //right
             {
-                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftBack->dutyCycle = 12000;
                 pointer_LeftFront->dutyCycle = 0;
                 pointer_RightBack->dutyCycle = 0;
                 pointer_RightFront->dutyCycle = 12000;
@@ -407,8 +407,8 @@ void randomMovement(uint16_t choice, int gogo0, int gogo1)
             else if(choice%16 == 14) //right
                     {
                         pointer_LeftBack->dutyCycle = 0;
-                        pointer_LeftFront->dutyCycle = 20000;
-                        pointer_RightBack->dutyCycle = 0;
+                        pointer_LeftFront->dutyCycle = 12000;
+                        pointer_RightBack->dutyCycle = 12000;
                         pointer_RightFront->dutyCycle = 0;
                         Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
                         Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
