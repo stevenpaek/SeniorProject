@@ -4,6 +4,20 @@
 /* Standard Includes */
 #include <stdint.h>
 #include <stdbool.h>
+#include <file.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include <third_party/fatfs/ffcio.h>
+
+#include <ti/display/Display.h>
+#include <ti/drivers/GPIO.h>
+#include <ti/drivers/SDFatFS.h>
 /****************************************************************************************************
  ************************************** LIGHTS ******************************************************
  ****************************************************************************************************/
@@ -148,11 +162,25 @@ uint16_t soundCounter = 0;
 char flag = 0;
 
 void init_clk(void);
+volatile uint16_t choice = 0;
+volatile uint16_t steve = 0;
+volatile int rising_edge;
+volatile int meas1 = 0;
+volatile int meas2 = 0;
+volatile int prev_rising = 0;
+volatile int wait = 0;
+char obstacle_detected = 0;
 
+
+/*******************************************************************************************************************************
+ **************************************************** US Sensor Controls ***********************************************************
+ *******************************************************************************************************************************/
+volatile uint16_t timer;
+/* Timer_A Continuous Mode Configuration Parameter */
 const Timer_A_ContinuousModeConfig continuousModeConfig =
 {
         TIMER_A_CLOCKSOURCE_SMCLK,           // SMCLK Clock Source
-        TIMER_A_CLOCKSOURCE_DIVIDER_1,       // SMCLK/1 = 3MHz
+        TIMER_A_CLOCKSOURCE_DIVIDER_64,       // SMCLK/1 = 3MHz
         TIMER_A_TAIE_INTERRUPT_DISABLE,      // Disable Timer ISR
         TIMER_A_SKIP_CLEAR                   // Skup Clear Counter
 };
@@ -167,6 +195,7 @@ const Timer_A_CaptureModeConfig captureModeConfig =
         TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE,  // Enable interrupt
         TIMER_A_OUTPUTMODE_OUTBITVALUE            // Output bit value
 };
+
 
 /*********************************************************************************
  ***************************** PWM Configurations ********************************
@@ -211,15 +240,202 @@ extern Timer_A_PWMConfig pwmConfig_RightFront =
  TIMER_A_OUTPUTMODE_RESET_SET,
  12000
 };
-extern Timer_A_PWMConfig pwmConfig_UltraSonic =
+
+Timer_A_PWMConfig* pointer_LeftBack = &pwmConfig_LeftBack;
+Timer_A_PWMConfig* pointer_RightBack = &pwmConfig_RightBack;
+Timer_A_PWMConfig* pointer_LeftFront = &pwmConfig_LeftFront;
+Timer_A_PWMConfig* pointer_RightFront = &pwmConfig_RightFront;
+
+void randomMovement(uint16_t choice, int gogo0, int gogo1)
 {
- TIMER_A_CLOCKSOURCE_SMCLK,
- TIMER_A_CLOCKSOURCE_DIVIDER_1,
- 65535,
- TIMER_A_CAPTURECOMPARE_REGISTER_4,
- TIMER_A_OUTPUTMODE_RESET_SET,
- 30
-};
+    if(choice%16 == 0) //right
+    {
+        pointer_LeftBack->dutyCycle = 0;
+        pointer_LeftFront->dutyCycle = 12000;
+        pointer_RightBack->dutyCycle = 0;
+        pointer_RightFront->dutyCycle = 12000;
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+    }
+    else if(choice%16 == 1) //right
+        {
+            pointer_LeftBack->dutyCycle = 0;
+            pointer_LeftFront->dutyCycle = 12000;
+            pointer_RightBack->dutyCycle = 0;
+            pointer_RightFront->dutyCycle = 12000;
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+        }
+    else if(choice%16 == 2) //right
+            {
+                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftFront->dutyCycle = 0;
+                pointer_RightBack->dutyCycle = 0;
+                pointer_RightFront->dutyCycle = 18000;
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+            }
+    else if(choice%16 == 3) //right
+            {
+                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftFront->dutyCycle = 0;
+                pointer_RightBack->dutyCycle = 0;
+                pointer_RightFront->dutyCycle = 0;
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+            }
+    else if(choice%16 == 4) //right
+            {
+                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftFront->dutyCycle = 18000;
+                pointer_RightBack->dutyCycle = 0;
+                pointer_RightFront->dutyCycle = 0;
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+            }
+    else if(choice%16 == 5) //right
+        {
+            pointer_LeftBack->dutyCycle = 0;
+            pointer_LeftFront->dutyCycle = 18000;
+            pointer_RightBack->dutyCycle = 0;
+            pointer_RightFront->dutyCycle = 0;
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+        }
+    else if(choice%16 == 6) //right
+            {
+                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftFront->dutyCycle = 18000;
+                pointer_RightBack->dutyCycle = 0;
+                pointer_RightFront->dutyCycle = 18000;
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+            }
+        else if(choice%16 == 7) //right
+                {
+                    pointer_LeftBack->dutyCycle = 0;
+                    pointer_LeftFront->dutyCycle = 18000;
+                    pointer_RightBack->dutyCycle = 0;
+                    pointer_RightFront->dutyCycle = 18000;
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                }
+        else if(choice%16 == 8) //right
+                {
+                    pointer_LeftBack->dutyCycle = 0;
+                    pointer_LeftFront->dutyCycle = 0;
+                    pointer_RightBack->dutyCycle = 0;
+                    pointer_RightFront->dutyCycle = 0;
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                }
+        else if(choice%16 == 9) //right
+                {
+                    pointer_LeftBack->dutyCycle = 0;
+                    pointer_LeftFront->dutyCycle = 18000;
+                    pointer_RightBack->dutyCycle = 0;
+                    pointer_RightFront->dutyCycle = 0;
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                }
+        else if(choice%16 == 10) //right
+            {
+                pointer_LeftBack->dutyCycle = 0;
+                pointer_LeftFront->dutyCycle = 12000;
+                pointer_RightBack->dutyCycle = 0;
+                pointer_RightFront->dutyCycle = 12000;
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+            }
+        else if(choice%16 == 11) //right
+                {
+                    pointer_LeftBack->dutyCycle = 0;
+                    pointer_LeftFront->dutyCycle = 12000;
+                    pointer_RightBack->dutyCycle = 0;
+                    pointer_RightFront->dutyCycle = 12000;
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                }
+            else if(choice%16 == 12) //right
+                    {
+                        pointer_LeftBack->dutyCycle = 0;
+                        pointer_LeftFront->dutyCycle = 0;
+                        pointer_RightBack->dutyCycle = 0;
+                        pointer_RightFront->dutyCycle = 18000;
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                    }
+            else if(choice%16 == 13) //right
+                    {
+                        pointer_LeftBack->dutyCycle = 0;
+                        pointer_LeftFront->dutyCycle = 12000;
+                        pointer_RightBack->dutyCycle = 0;
+                        pointer_RightFront->dutyCycle = 0;
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                    }
+            else if(choice%16 == 14) //right
+                    {
+                        pointer_LeftBack->dutyCycle = 0;
+                        pointer_LeftFront->dutyCycle = 0;
+                        pointer_RightBack->dutyCycle = 0;
+                        pointer_RightFront->dutyCycle = 0;
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                    }
+            else if(choice%16 == 15) //right
+                {
+                    pointer_LeftBack->dutyCycle = 0;
+                    pointer_LeftFront->dutyCycle = 12000;
+                    pointer_RightBack->dutyCycle = 0;
+                    pointer_RightFront->dutyCycle = 0;
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                }
+    else //left
+    {
+        pointer_LeftBack->dutyCycle = 0;
+        pointer_LeftFront->dutyCycle = 0;
+        pointer_RightBack->dutyCycle = 0;
+        pointer_RightFront->dutyCycle = 0;
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+        Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+    }
+}
 
 /*********************************************************************************
  ************************ Peripheral Initializations *****************************
@@ -873,30 +1089,26 @@ int main(void)
     MAP_WDT_A_holdTimer();
     /* Setting DCO to 12MHz */
     MAP_CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_12);
-    //PCM_setPowerState(PCM_AM_LDO_VCORE1);
-    //MAP_PCM_setCoreVoltageLevel(PCM_VCORE1);
-    //FlashCtl_setWaitState(FLASH_BANK0, 2);
-    //FlashCtl_setWaitState(FLASH_BANK1, 2);
-    //MAP_FPU_enableModule();
-    /* Setting DCO to 48MHz */
-    //MAP_CS_setDCOCenteredFrequency(48000000);
-    //MAP_CS_initClockSignal(CS_MCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     MAP_CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
 
 
     /* Initialize TX and RX for UART */
     initStrip();
     goBlue();
-
+    /* Configuring P2.4 as peripheral input for capture */
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P2, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
+    /* P2.5 Trigger Pin for Ultra Sonic */
+    GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN5);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN5);
+    /* Test signal for US */
+    GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN5);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
     MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P3,
                 GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
 
     MAP_UART_initModule(EUSCI_A2_BASE, &uartConfig);
 
     MAP_UART_enableModule(EUSCI_A2_BASE);
-
-    char analogX[5];
-    char analogY[5];
 
     /* Enabling interrupts */
     MAP_UART_enableInterrupt(EUSCI_A2_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
@@ -908,12 +1120,6 @@ int main(void)
     MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P7, GPIO_PIN6, GPIO_PRIMARY_MODULE_FUNCTION);
     MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P7, GPIO_PIN7, GPIO_PRIMARY_MODULE_FUNCTION);
 
-    MAP_GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN5);
-    MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
-
-    /* Configuring Capture Mode */
-    //MAP_Timer_A_initCapture(TIMER_A0_BASE, &captureModeConfig);
-
     /* Configuring Continuous Mode */
     MAP_Timer_A_configureContinuousMode(TIMER_A1_BASE, &continuousModeConfig);
 
@@ -921,17 +1127,22 @@ int main(void)
     initSPI();
     initTimer32();
     initTimer32_R2D2();
+
+    /* Configuring Capture Mode */
+    Timer_A_initCapture(TIMER_A0_BASE, &captureModeConfig);
+    /* Configuring Continuous Mode */
+    Timer_A_configureContinuousMode(TIMER_A0_BASE, &continuousModeConfig);
+    Interrupt_enableInterrupt(INT_TA0_N);
+
     MAP_Interrupt_enableMaster();
 
     /* Starting the Timer_A0 in continuous mode */
+    Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_CONTINUOUS_MODE);
     MAP_Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_CONTINUOUS_MODE);
     MAP_Timer32_startTimer(TIMER32_0_BASE, false);
     MAP_Timer32_startTimer(TIMER32_1_BASE, false);
 
-    Timer_A_PWMConfig* pointer_LeftBack = &pwmConfig_LeftBack;
-    Timer_A_PWMConfig* pointer_RightBack = &pwmConfig_RightBack;
-    Timer_A_PWMConfig* pointer_LeftFront = &pwmConfig_LeftFront;
-    Timer_A_PWMConfig* pointer_RightFront = &pwmConfig_RightFront;
+
 
     while (1)
     {
@@ -945,11 +1156,14 @@ int main(void)
         switches_data = ((switches_upper & 0x0F) << 4) + (switches_lower & 0x0F);
         analogY_data = (((analogY_upper & 0x0F) << 4) + (analogY_lower & 0x0F));
         analogX_data = (((analogX_upper & 0x0F) << 4) + (analogX_lower & 0x0F));
-        if ((switches_data & 0x07) == 0x01) // switch to manual mode
+
+/*******************************************************************************************************************************************
+ ********************************************************* MANUAL MODE *********************************************************************
+ *******************************************************************************************************************************************/
+        if ((switches_data & 0x07) == 0x01)
         {
         leftMotorEffort = (int16_t) analogY_data + (int16_t) analogX_data;
         rightMotorEffort = (int16_t) analogY_data - (int16_t) analogX_data;
-
         if ((abs(analogY_data) >= 20 || abs(analogX_data) >= 20) && ((buttons & 0x01) == 0x00))
         {
             if (leftMotorEffort > 5)
@@ -1000,11 +1214,88 @@ int main(void)
         while (count < 2501)
             count++;
         }//end of manual mode
-        else if ((switches_data & 0x07) == 0x02) // switch to manual mode
+/*******************************************************************************************************************************************
+ ********************************************************* AUTONOMOUS MODE *********************************************************************
+ *******************************************************************************************************************************************/
+        else if ((switches_data & 0x07) == 0x02)
         {
+            Timer32_disableInterrupt(TIMER32_1_BASE);
             goGreen();
+            //GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN5);
+            volatile int count = 0;
+            //while (count < 100000)
+            //    count++;
+            GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN5);
+            //count = 0;
+            while (count < 10)
+                count++;
+            GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN5);
+            volatile int waiting = 0;
+            srand(time(0));
+
+            steve++;
+
+            volatile int gogo0 = (rand()%12000)+12000;
+            volatile int gogo1 = (rand()%12000)+12000;
+            if (obstacle_detected == 1) // Obstacle
+            {
+
+                    GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN5);
+                    //move back
+                    pointer_LeftBack->dutyCycle = 12000;
+                    pointer_LeftFront->dutyCycle = 0;
+                    pointer_RightBack->dutyCycle = 12000;
+                    pointer_RightFront->dutyCycle = 0;
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                    Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                    //for(waiting=0;waiting<100000;waiting++);
+                    //choice++;
+                    //randomMovement(choice, gogo0, gogo1);
+                    for(waiting=0;waiting<300000;waiting++);
+                    obstacle_detected = 0;
+
+
+            }
+            else // No obstacle
+            {
+                GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
+                choice++;
+                randomMovement((uint16_t)choice, gogo0, gogo1);
+                //move random
+                //pointer_LeftBack->dutyCycle = 0;
+                //pointer_LeftFront->dutyCycle = 12000;
+                //pointer_RightBack->dutyCycle = 0;
+                //pointer_RightFront->dutyCycle = 12000;
+                //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                for(waiting=0;waiting<300000;waiting++)
+                {
+                    if(obstacle_detected==1)
+                    {
+                        //randomMovement(choice, gogo0, gogo1);
+                        pointer_LeftBack->dutyCycle = 12000;
+                                            pointer_LeftFront->dutyCycle = 0;
+                                            pointer_RightBack->dutyCycle = 12000;
+                                            pointer_RightFront->dutyCycle = 0;
+                                            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+                                            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+                                            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+                                            Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+                        break;
+                    }
+                }
+                while(waiting<100000)
+                    waiting++;
+            }
         }
-        else if ((switches_data & 0x07) == 0x04) // switch to manual mode
+/*******************************************************************************************************************************************
+ ********************************************************* PARTY MODE *********************************************************************
+ *******************************************************************************************************************************************/
+        else if ((switches_data & 0x07) == 0x04)
         {
             goRed();
         }
@@ -1070,3 +1361,41 @@ void T32_INT2_IRQHandler(void)
     writeDAC(r2d2[position++]);
     Timer32_clearInterruptFlag(TIMER32_1_BASE);
 }
+void TA0_N_IRQHandler(void)
+ {
+     if ((P2IN & 0x10) != 0)
+         rising_edge = 1;
+     else
+         rising_edge = 0;
+     if (rising_edge == 1) // Start
+     {
+         meas1 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1);
+     }
+     else
+     {
+         meas2 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1);
+     }
+     if (rising_edge == 0) {
+         if (meas2 >= meas1) {
+             timer = meas2 - meas1;
+         }
+         else {
+             timer = meas2 + (0xFFFF - meas1);
+         }
+     }
+     if (timer > 400)
+         obstacle_detected = 0;
+     else
+     {
+         obstacle_detected = 1;
+         //pointer_LeftBack->dutyCycle = 0;
+         //pointer_LeftFront->dutyCycle = 0;
+         //pointer_RightBack->dutyCycle = 0;
+         //pointer_RightFront->dutyCycle = 0;
+         //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftFront);
+         //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightBack);
+         //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_LeftBack);
+         //Timer_A_generatePWM(TIMER_A1_BASE, &pwmConfig_RightFront);
+     }
+     Timer_A_clearCaptureCompareInterrupt(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1);
+ }
